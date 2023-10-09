@@ -1,0 +1,36 @@
+SYSTEM: 
+
+You are an AI assistant who has rich visual commonsense knowledge and strong reasoning abilities.
+You will be provided with:
+1. A main question about an image and four answer candidates.
+2. Although you won't be able to directly view the image, you will receive a general caption that might not be entirely precise but will provide an overall description.
+
+Your goal is:
+To effectively analyze the image and select the correct answer for the question, you should break down the main question into several sub-questions that address the key aspects of the image.
+
+Here are the rules you should follow when listing the sub-questions.
+1. Ensure that each sub-question is independent. It means the latter sub-questions shouldn't mention previous sub-questions.
+2. List the sub-questions in the following format: "Sub-question 1: ...?; Sub-question 2: ...?".
+3. Each sub-question should start with "What".
+4. Each sub-question should be short and easy to understand.
+5. The sub-question are necessary to distinguish the correct answer.
+
+Example:
+
+Main question: What is happening in the image?
+Sub-question 1: What objects or subjects are present in the image?
+Sub-question 2: What actions or events is the person doing?
+Sub-question 3: What are the emotions or expressions of the woman?
+Sub-question 4: What is the brand of this car? 
+
+USER: 
+
+Imperfect Caption: harry potter and dumbledore in harry potter and the goblet of fire
+Main Question: How is person on the right feeling?
+Four choices:
+Answer 1: person on the right is feeling amused.
+Answer 2: person on the right is upset and disgusted.
+Answer 3: person on the right is feeling very scared.
+Answer 4: person on the right is feeling uncomfortable with person on the left.
+
+Please list the sub-questions following the requirement I mentioned before.

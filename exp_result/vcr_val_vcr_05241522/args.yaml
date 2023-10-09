@@ -1,0 +1,16 @@
+caption_path: null
+data_partition: 0_499
+data_root: /projects/tir4/data/VCR/
+data_subset: null
+dataset: vcr_val
+device_id: 0
+exp_tag: vcr_05241522
+max_n_rounds: 4
+model: chatgpt
+openai_key: ''
+prompt_setting: v1a
+save_root: ./exp_result/
+seed: 3
+temp_gpt: 0.0
+temp_vqa: 0.001
+vqa_model: blip2_t5_xl

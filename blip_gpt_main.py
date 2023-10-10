@@ -39,7 +39,7 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
     """
 
     if model == 'chatgpt':
-        model = 'vicuna-13b'
+        model = 'vicuna-7b'
 #         model = 'gpt-3.5-turbo'
     elif model =='gpt4':
         model = 'gpt-4'

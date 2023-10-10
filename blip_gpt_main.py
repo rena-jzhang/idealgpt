@@ -234,9 +234,9 @@ def main(args):
 
 #     question_model = args.model
 
-    question_model = AutoModelForCausalLM.from_pretrained("lmsys/vicuna-7b-v1.5", cache_dir=CACHE)
-#     question_model.gradient_checkpointing_enable()
-    question_model_processor = AutoTokenizer.from_pretrained("lmsys/vicuna-7b-v1.5", cache_dir=CACHE)
+    question_model = AutoModelForCausalLM.from_pretrained("lmsys/vicuna-7b-v1.5")
+#     question_model.gradient_checkpointing_enable()f
+    question_model_processor = AutoTokenizer.from_pretrained("lmsys/vicuna-7b-v1.5")
     question_model_processor.pad_token = question_model_processor.eos_token
 
     # preparing the folder to save args results

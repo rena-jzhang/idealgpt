@@ -37,6 +37,7 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
         n_blip2_context (int): how many previous QA rounds can blip2 see. negative value means blip2 can see all 
         print_mode (str): print mode. 'chat' for printing everying. 'bar' for printing everthing but the chat process. 'no' for no printing
     """
+
     if model == 'chatgpt':
         model = 'vicuna-13b'
 #         model = 'gpt-3.5-turbo'
@@ -86,6 +87,7 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
                 caption = ve_info['caption']
             else:
                 caption = None
+        
         results = {}
         # Initialize VQA Instance.
         if type(dataset) == VCRSampler:
@@ -130,9 +132,8 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
             with open(result_path, 'w') as f:
                 yaml.dump(info, f)
 
-    # Evaluation:
+    # Evaluation: Evaluate VCR and SNLI-VE by acc.
     if type(dataset) == VCRSampler or type(dataset) == VESampler:
-        # Evaluate VCR and SNLI-VE by acc.
         total_correct = 0
         total_exceed_round = 0
         for predict_i, gt_i in zip(all_predict_answer, all_answer_label):
@@ -184,6 +185,7 @@ def parse():
     
     
 def main(args):
+
     # Set OpenAI
     OPENAI_API_KEY = args.openai_key
     openai.api_key = OPENAI_API_KEY
@@ -237,7 +239,7 @@ def main(args):
     question_model_processor = AutoTokenizer.from_pretrained("lmsys/vicuna-7b-v1.5", cache_dir=CACHE)
     question_model_processor.pad_token = question_model_processor.eos_token
 
-    # preparing the folder to save results
+    # preparing the folder to save args results
     save_path = os.path.join(args.save_root, f'{args.dataset}_{args.exp_tag}')
     if not os.path.exists(save_path):
         os.makedirs(os.path.join(save_path, 'result'))

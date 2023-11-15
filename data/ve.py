@@ -9,7 +9,7 @@ class VESampler(VCRSampler):
     def __init__(self, dataset_root, dataset_name, data_subset, data_partition, caption_path) -> None:
         self.ann = {}
         if 'dev' in dataset_name:
-            image_path = '/home/tangtangwzc/flickr_data/flickr30k_images/flickr30k_images/' # image path
+            image_path = '/data/SNLI-VE/data/flickr30k_images/' # image path
             dataset_anno_dir = os.path.join(dataset_root, 'snli_ve_dev.jsonl')
         else:
             raise NotImplementedError('Support dev only')
@@ -33,8 +33,8 @@ class VESampler(VCRSampler):
                     if pair_id not in id_partitions:
                         continue
 
-                image_id = line['Flikr30kID'] # '2248275918.jpg'
-                img_path = os.path.join(image_path, image_id)
+                image_id = line['Flickr30K_ID'] # '2248275918.jpg'
+                img_path = os.path.join(image_path, image_id) + ".jpg"
                 caption_gt = line['sentence1'] # ground-truth caption
                 hypothesis = line['sentence2']
                 answer_label = line['gold_label'] # entailment neutral contradiction

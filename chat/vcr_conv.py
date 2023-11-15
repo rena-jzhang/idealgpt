@@ -19,7 +19,7 @@ class VCRConversationTwoAgent():
         self.answer_choices = answer_choices
         self.answer_predict = None
 
-        self.catpion = caption
+        self.caption = caption
         self.sub_questions = []
         self.sub_answers = []
         self.chat_history = []
@@ -233,8 +233,8 @@ class VCRConversationTwoAgent():
 
     def chatting(self, max_n_rounds, print_mode):
         # Caption first.
-        if self.catpion is None and self.use_caption:
-            self.catpion = self.vqa_model.caption(self.img)
+        if self.caption is None and self.use_caption:
+            self.caption = self.vqa_model.caption(self.img)
         
         self.chat_history = {'init_asker':[],
                              'more_asker':[],
@@ -242,10 +242,10 @@ class VCRConversationTwoAgent():
         for round_i in tqdm(range(max_n_rounds), desc='Chat Rounds', disable=print_mode != 'bar'):
             if round_i == 0:
                 # Prepare initial gpt input for decomposing into sub-questions, and Update chat_history.
-                assert self.catpion != None if self.use_caption else self.catpion == None
+                assert self.caption != None if self.use_caption else self.caption == None
 
                 self.chat_history_init_asker = [{"role": "system", "content": self.INIT_ASKER_SYSTEM_PROMPT}]
-                gpt_input = self.prepare_init_asker_message(prompt=self.INIT_ASKER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices)
+                gpt_input = self.prepare_init_asker_message(prompt=self.INIT_ASKER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices)
                 self.chat_history_init_asker.append(gpt_input)
 
                 # Run GPT and update chat_history.
@@ -259,7 +259,7 @@ class VCRConversationTwoAgent():
             else:
                 # GPT is not sure, let GPT ask additional questions, and update chat_history.
                 self.chat_history_more_asker = [{"role": "system", "content": self.MORE_ASKER_SYSTEM_PROMPT}]
-                gpt_input = self.prepare_more_asker_message(prompt=self.MORE_ASKER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices, 
+                gpt_input = self.prepare_more_asker_message(prompt=self.MORE_ASKER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices, 
                                                             sub_questions=self.sub_questions, sub_answers=self.sub_answers, analysis=cur_analysis)
                 self.chat_history_more_asker.append(gpt_input)
 
@@ -286,7 +286,7 @@ class VCRConversationTwoAgent():
                 self.chat_history_reasoner = [{"role": "system", "content": self.FINAL_REASONER_SYSTEM_PROMPT}]
             else:
                 self.chat_history_reasoner = [{"role": "system", "content": self.REASONER_SYSTEM_PROMPT}]
-            gpt_input = self.prepare_reasoner_message(prompt=self.REASONER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices,
+            gpt_input = self.prepare_reasoner_message(prompt=self.REASONER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices,
                                                       sub_questions=self.sub_questions, sub_answers=self.sub_answers)
             self.chat_history_reasoner.append(gpt_input)
 

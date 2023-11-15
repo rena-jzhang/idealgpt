@@ -105,6 +105,7 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
             chat = VEConversationTwoAgent(img=image_path,
                                 vqa_model=vqa_model,
                                 model=model,
+                                processor=processor,
                                 question=info['setting']['hypothesis'],
                                 answer_choices=['entailment', 'neutral', 'contradiction'],
                                 prompt_setting=prompt_setting,
@@ -119,7 +120,7 @@ def IdealGPT(vqa_model, dataset, data_ids, model, processor=None, save_path='', 
         results['sub_answers'] = chat.sub_answers
         results['chat_history'] = chat.chat_history
         results['total_tokens'] = chat.total_tokens
-        results['caption'] = chat.catpion
+        results['caption'] = chat.caption
         results['used_round'] = used_round
 
         info['result'] = results
@@ -211,7 +212,8 @@ def main(args):
     if 'blip2' in args.vqa_model:
         from lib.blip2_lib import Blip2Lavis
         if 't5' in args.vqa_model and '_xl' in args.vqa_model:
-            vqa_model = Blip2Lavis(name="blip2_t5", model_type="pretrain_flant5xl", device=torch.device("cuda:{}".format(args.device_id)))
+            vqa_model = Blip2Lavis(name="blip2_t5", 
+            model_type="pretrain_flant5xl", device=torch.device("cuda:{}".format(args.device_id)))
 
         elif 't5' in args.vqa_model and '_xxl' in args.vqa_model:
             vqa_model = Blip2Lavis(name="blip2_t5", model_type="pretrain_flant5xxl", device=torch.device("cuda:{}".format(args.device_id)))
@@ -235,7 +237,6 @@ def main(args):
 #     question_model = args.model
 
     question_model = AutoModelForCausalLM.from_pretrained("lmsys/vicuna-7b-v1.5")
-#     question_model.gradient_checkpointing_enable()f
     question_model_processor = AutoTokenizer.from_pretrained("lmsys/vicuna-7b-v1.5")
     question_model_processor.pad_token = question_model_processor.eos_token
 

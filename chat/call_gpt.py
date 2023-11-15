@@ -21,7 +21,7 @@ def call_gpt(chatgpt_messages, model="gpt-3.5-turbo", processor=None, temp_gpt=0
         else:
             prompt += 'ASSISTANT: \n\n'
             prompt += (chat['content']+'\n\n')
-#     print(prompt)
+
     inputs = processor(prompt, return_tensors="pt")
     output = model.generate(**inputs, max_new_tokens=256)
     reply = processor.decode(output[0], skip_special_tokens=True)

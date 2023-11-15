@@ -6,17 +6,21 @@ from tqdm import tqdm
 import copy
 
 class VEConversationTwoAgent(VCRConversationTwoAgent):
-    def __init__(self, img, vqa_model, model, question, answer_choices, data_id, prompt_setting='v1a', caption=None, temp_gpt=0):
-        super().__init__(img, vqa_model, model, question, answer_choices, prompt_setting, caption, temp_gpt)
+    def __init__(self, img, vqa_model, model, question, processor, answer_choices, data_id, prompt_setting='v1a', caption=None, temp_gpt=0):
+        super().__init__(img, vqa_model, model, question, processor, answer_choices, prompt_setting, caption, temp_gpt)
         if type(self) == VEConversationTwoAgent:
             assert prompt_setting in ['v1a']
-
+        self.processor = processor
         self.data_id = data_id
         self.prompt_setting = prompt_setting
         self.chat_history = {}
         self.chat_history_init_asker = []
         self.chat_history_more_asker = []
         self.chat_history_reasoner = []
+        self.use_caption = True
+        self.caption = caption
+        self.question = question #VCRSampler
+
         # add prompts.
         if type(self) == VEConversationTwoAgent:
             if prompt_setting == 'v1a':
@@ -161,11 +165,11 @@ class VEConversationTwoAgent(VCRConversationTwoAgent):
         else:
             return False
 
-
     def chatting(self, max_n_rounds, print_mode):
         # Caption first.
-        if self.catpion is None and self.use_caption:
-            self.catpion = self.vqa_model.caption(self.img)
+        if self.caption is None and self.use_caption:
+            print('CAP NEEDED')
+            self.caption = self.vqa_model.caption(self.img)
         
         self.chat_history = {'init_asker':[],
                              'more_asker':[],
@@ -173,14 +177,14 @@ class VEConversationTwoAgent(VCRConversationTwoAgent):
         for round_i in tqdm(range(max_n_rounds), desc='Chat Rounds', disable=print_mode != 'bar'):
             if round_i == 0:
                 # Prepare initial gpt input for decomposing into sub-questions, and Update chat_history.
-                assert self.catpion != None if self.use_caption else self.catpion == None
+                assert self.caption != None if self.use_caption else self.caption == None
 
                 self.chat_history_init_asker = [{"role": "system", "content": self.INIT_ASKER_SYSTEM_PROMPT}]
-                gpt_input = self.prepare_init_asker_message(prompt=self.INIT_ASKER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices)
+                gpt_input = self.prepare_init_asker_message(prompt=self.INIT_ASKER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices)
                 self.chat_history_init_asker.append(gpt_input)
 
                 # Run GPT and update chat_history.
-                gpt_response, n_tokens = call_gpt(self.chat_history_init_asker, model=self.model, temp_gpt=self.temp_gpt)
+                gpt_response, n_tokens = call_gpt(self.chat_history_init_asker, model=self.model, processor=self.processor, temp_gpt=self.temp_gpt)
                 self.chat_history_init_asker.append({'role': 'assistant', 'content': gpt_response})
                 self.total_tokens = self.total_tokens + n_tokens
 
@@ -190,12 +194,12 @@ class VEConversationTwoAgent(VCRConversationTwoAgent):
             else:
                 # GPT is not sure, let GPT ask additional questions, and update chat_history.
                 self.chat_history_more_asker = [{"role": "system", "content": self.MORE_ASKER_SYSTEM_PROMPT}]
-                gpt_input = self.prepare_more_asker_message(prompt=self.MORE_ASKER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices, 
+                gpt_input = self.prepare_more_asker_message(prompt=self.MORE_ASKER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices, 
                                                             sub_questions=self.sub_questions, sub_answers=self.sub_answers, analysis=cur_analysis)
                 self.chat_history_more_asker.append(gpt_input)
 
                 # Run GPT.
-                gpt_response, n_tokens = call_gpt(self.chat_history_more_asker, model=self.model, temp_gpt=self.temp_gpt)
+                gpt_response, n_tokens = call_gpt(self.chat_history_more_asker, model=self.model,  processor=self.processor, temp_gpt=self.temp_gpt)
                 self.chat_history_more_asker.append({'role': 'assistant', 'content': gpt_response})
                 self.total_tokens = self.total_tokens + n_tokens
 
@@ -217,7 +221,7 @@ class VEConversationTwoAgent(VCRConversationTwoAgent):
                 self.chat_history_reasoner = [{"role": "system", "content": self.FINAL_REASONER_SYSTEM_PROMPT}]
             else:
                 self.chat_history_reasoner = [{"role": "system", "content": self.REASONER_SYSTEM_PROMPT}]
-            gpt_input = self.prepare_reasoner_message(prompt=self.REASONER_FIRST_QUESTION, caption=self.catpion, question=self.question, answer_choices=self.answer_choices,
+            gpt_input = self.prepare_reasoner_message(prompt=self.REASONER_FIRST_QUESTION, caption=self.caption, question=self.question, answer_choices=self.answer_choices,
                                                       sub_questions=self.sub_questions, sub_answers=self.sub_answers)
             self.chat_history_reasoner.append(gpt_input)
 
@@ -231,7 +235,7 @@ class VEConversationTwoAgent(VCRConversationTwoAgent):
                 final_round_flag = False
             while try_num < max_try:
                 try_num += 1
-                gpt_response, n_tokens = call_gpt(self.chat_history_reasoner, model=self.model, temp_gpt=self.temp_gpt)
+                gpt_response, n_tokens = call_gpt(self.chat_history_reasoner, model=self.model,  processor=self.processor, temp_gpt=self.temp_gpt)
                 self.total_tokens = self.total_tokens + n_tokens
 
                 cur_analysis, gpt_answer, need_rerun = self.parse_final_answer_rerun(gpt_response, final_round_flag=final_round_flag)
